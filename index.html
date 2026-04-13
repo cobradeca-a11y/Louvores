@@ -55,7 +55,8 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);min-height:100v
 #qr-overlay{position:fixed;inset:0;background:rgba(15,9,3,.92);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
 #qr-overlay.show{opacity:1;pointer-events:all}
 .qr-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 28px 28px;text-align:center;max-width:320px;width:90%}
-.qr-box canvas{border-radius:12px;margin-bottom:18px}
+.qr-box canvas, .qr-box img{border-radius:12px;margin-bottom:18px;display:block}
+#qrCanvas{display:flex;justify-content:center;margin-bottom:18px}
 .qr-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:6px}
 .qr-sub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:22px}
 .qr-url{font-size:11px;color:var(--gold-dim);word-break:break-all;margin-bottom:20px;background:var(--card);padding:8px 12px;border-radius:8px;border:1px solid var(--border)}
@@ -100,14 +101,14 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--bg);min-height:100v
   <div class="qr-box">
     <div class="qr-title">Compartilhar Ensaio</div>
     <div class="qr-sub">Aponte a câmera do celular para abrir os louvores.</div>
-    <canvas id="qrCanvas"></canvas>
+    <div id="qrCanvas"></div>
     <div class="qr-url">cobradeca-a11y.github.io/Louvores</div>
     <button class="qr-close" onclick="fecharQR()">Fechar</button>
   </div>
 </div>
 
 <!-- QR lib -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
 <script>
 var L = [
@@ -237,15 +238,28 @@ var qrGerado = false;
 function mostrarQR() {
   var overlay = document.getElementById('qr-overlay');
   if (!qrGerado) {
-    var canvas = document.getElementById('qrCanvas');
-    new QRCode(canvas, {
-      text: 'https://cobradeca-a11y.github.io/Louvores',
-      width: 220,
-      height: 220,
-      colorDark: '#1a1209',
-      colorLight: '#f0e8d8',
-      correctLevel: QRCode.CorrectLevel.M
+    var qr = qrcode(0, 'M');
+    qr.addData('https://cobradeca-a11y.github.io/Louvores');
+    qr.make();
+    var svg = qr.createSvgTag({
+      cellSize: 6,
+      margin: 2,
+      scalable: true
     });
+    var container = document.getElementById('qrCanvas');
+    container.innerHTML = svg;
+    var svgEl = container.querySelector('svg');
+    if (svgEl) {
+      svgEl.style.width = '220px';
+      svgEl.style.height = '220px';
+      svgEl.style.borderRadius = '12px';
+      svgEl.style.display = 'block';
+      // cores
+      svgEl.querySelectorAll('rect').forEach(function(r, i) {
+        if (i === 0) r.setAttribute('fill', '#f0e8d8'); // fundo
+        else r.setAttribute('fill', '#1a1209'); // módulos
+      });
+    }
     qrGerado = true;
   }
   overlay.classList.add('show');
