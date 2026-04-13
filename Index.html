@@ -1,1 +1,201 @@
-index
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ensaio — Louvores</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Source+Sans+3:wght@400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#1a1209;--surface:#241a0e;--card:#2e2012;
+  --gold:#c9a052;--gold-dim:#8a6830;--cream:#f0e8d8;--muted:#7a6848;
+  --border:rgba(201,160,82,0.12);
+}
+body{font-family:'Source Sans 3',sans-serif;background:var(--bg);min-height:100vh;color:var(--cream);overflow-x:hidden}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px 14px;position:sticky;top:0;z-index:100}
+.back-btn{display:none;align-items:center;gap:5px;background:none;border:none;color:var(--gold);font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:500;cursor:pointer;padding:0;margin-bottom:10px}
+.back-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.back-btn.visible{display:flex}
+.header-eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:3px}
+.header-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:var(--cream);line-height:1.1}
+.header-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.progress-bar{height:2px;background:var(--border);margin-top:12px;border-radius:2px;overflow:hidden;display:none}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:2px;transition:width .35s ease}
+
+#lista{padding:20px 16px 40px}
+.section-label{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;padding-left:2px}
+.louvor-card{background:var(--card);border-radius:14px;margin-bottom:8px;border:1px solid var(--border);cursor:pointer;transition:transform .1s,border-color .2s}
+.louvor-card:active{transform:scale(.975)}
+.louvor-inner{display:flex;align-items:center;padding:14px 16px;gap:14px}
+.louvor-num{width:36px;height:36px;border-radius:9px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--gold);flex-shrink:0}
+.louvor-info{flex:1;min-width:0}
+.louvor-name{font-size:15px;font-weight:600;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.louvor-tag{font-size:11px;color:var(--muted);margin-top:2px}
+.louvor-arrow{color:var(--gold-dim);font-size:20px;flex-shrink:0;line-height:1}
+.avulso-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(212,135,10,.12);color:var(--gold);border:1px solid rgba(212,135,10,.3);margin-left:7px;vertical-align:middle}
+
+#viewer{display:none;padding-bottom:50px}
+.louvor-header{background:var(--surface);padding:18px 20px 22px;border-bottom:1px solid var(--border)}
+.louvor-header-num{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:4px}
+.louvor-header-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--cream);line-height:1.2}
+
+.letra{padding:24px 20px 16px;font-size:17px;line-height:2.1;color:var(--cream);white-space:pre-wrap;font-weight:400}
+
+.nav-bottom{display:flex;gap:10px;padding:0 16px;margin-top:12px}
+.nav-btn{flex:1;padding:14px;border-radius:12px;border:none;font-family:'Source Sans 3',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s}
+.nav-btn:active{transform:scale(.97)}
+.nav-btn.prev{background:var(--card);color:var(--cream);border:1px solid var(--border)}
+.nav-btn.next{background:var(--gold);color:#1a0e00}
+.nav-btn:disabled{opacity:.28;cursor:default}
+.counter{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="back-btn" id="backBtn" onclick="voltarLista()">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Louvores
+  </button>
+  <div class="header-eyebrow">Ensaio Geral</div>
+  <div class="header-title" id="headerTitle">Casamento</div>
+  <div class="header-sub" id="headerSub">7 louvores · toque para abrir</div>
+  <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div id="lista">
+  <div class="section-label">Sequência do ensaio</div>
+</div>
+
+<div id="viewer"></div>
+
+<script>
+var L = [
+  {
+    id:1, num:"710", nome:"O Meu Viver É Cristo", avulso:false,
+    letra:
+"O meu viver é Cristo, meu Salvador,\nPois se entregou para a vida eterna me dar.\nHoje venho a ti, para expressar.\n\nCORO\nToda gratidão a ti Jesus,\nPorque tu és maravilhoso.\nPra sempre cantarei a ti, meu Rei,\nPois tu me fizeste bem\n\nINSTRUMENTOS\n\nMeu verdadeiro amigo, sempre fiel.\nEsconderijo meu, para sempre, Emanuel.\nÉs o meu Senhor, a razão do meu viver!\nHoje venho a ti\npara expressar.\n\nCORO (2X)\nToda gratidão a ti Jesus,\nPorque tu és maravilhoso.\nPra sempre cantarei a ti, Meu Rei,\npois tu me fizeste bem\n\nPra sempre cantarei a ti, meu Rei,\nPois tu me fizeste bem.\npois tu me fizeste bem"
+  },
+  {
+    id:2, num:"AVULSO", nome:"Cordeiro de Deus", avulso:true,
+    letra:
+"Teu santo filho sem pecar\nFoi enviado pra levar\nUm peso que era todo meu\nE se tornar Cordeiro de Deus\n\nO seu presente de amor\nFoi rejeitado pelos seus\nHumilde rei nada falou\nE assim se fez Cordeiro de Deus.\n\nCORO\nCordeiro de Deus tão puro és!\nVou te adorar e te exaltar\nCom sangue vem lavar meu ser\nMeu Cristo és Cordeiro de Deus.\n\nPerdido estava sem saber,\nMas me atraíste a teu ser.\nE hoje sou um servo teu\nPra teu louvor Cordeiro de Deus.\n\nCORO\n\nFinal\nCom sangue vem\nLavar meu ser…..\nMeu Cristo és Cordeiro…. de Deus."
+  },
+  {
+    id:3, num:"196", nome:"O Grande Amor do Meu Senhor", avulso:false,
+    letra:
+"O grande amor do meu Senhor\nO Rei de todo universo!\nJesus, o soberano Deus,\nRespond escente,\nEstrela da Manhã!\n\nComo entender que meu Jesus,\nUm dia olhou pra mim,\nE sem querer nada em troca,\nTão grande amor me deu, o meu Senhor\nVida eterna deu, meu Salvador!\n\nCORO\nAbençoador, Deus de paz, consolador,\nMeu Rei e Senhor.\nHomem se fez, morreu em meu lugar\nMeu redentor,\nMinha esperança,\nMinha esperança é!\n\nA rocha firme, (a rocha firme)\nRefúgio seguro, (refúgio seguro)\nA minha alegria,\nMeu louvor é só pra ti\nMeu grande eu sou!\n\nCORO\n\nFinal:\nO Rei do universo,\n(um dia olhou pra mim)\nO meu grande Eu Sou, Jesus."
+  },
+  {
+    id:4, num:"AVULSO", nome:"Uma Voz Mansa e Delicada", avulso:true,
+    letra:
+"INTRODUÇÃO\n\nUma voz mansa e delicada,\nSinta agora a minha paz\nEm teu coração.\n\nSei por que estás aqui,\nPensas que eu não te vi. Sai da escuridão!\nEu vou tirar o medo do teu coração.\n\nPensas estar só, e olhas ao teu redor.\nSei que há muitos que me deixaram,\nDestruíram meus altares,\nDesprezaram a profecia do teu Deus\n\nCORO 2X\nEu quero te dizer que eu livrei, salvei\nTodos que não me negaram\nJoelhos que não se dobraram\n\nTeu fim não é aqui\nTu vais prosseguir\nPois grandes coisas, sim,\nTu viverás por mim\n(Viverás por mim)\n\nINSTRUMENTOS\n\nRepetir o louvor"
+  },
+  {
+    id:5, num:"631", nome:"Sê Exaltado, ó Deus", avulso:false,
+    letra:
+"INTRODUÇÃO\n\nCORO\nSê exaltado, ó Deus, sobre os céus,\nSeja tua glória sobre toda a terra.\nGrande e Majestoso,\nToda a terra e o mar pertencem só a ti;\nJusto, tão poderoso,\nMesmo diante de tua glória posso dizer\nQue tu vives em mim.\n\nCORO\n\nINSTRUMENTOS\n\nTu és perfeito, santo e soberano Deus,\nDe toda a terra tu és Rei;\n\nEterno e triuno, supremo Criador,\nA ti pra sempre cantarei;\n\nLouvar-te-ei, Senhor, entre os povos,\n\nCantar-te-ei louvores entre as nações.\n\nCORO"
+  },
+  {
+    id:6, num:"AVULSO", nome:"Basta-nos Tua Graça, Senhor", avulso:true,
+    letra:
+"INTRODUÇÃO\n\nBasta-nos tua graça, Senhor\nSuficiente merecido favor\n\nNão somos merecedores\nMas teu amor nos alcançou\n\nCORO\nO que podemos oferecer\nSe o que temos proveio de ti?\nE sem ti nada somos\nA tua graça nos basta\n\nBasta-nos tua graça, Senhor\nE os nossos pés não vacilarão\nCaminharemos seguros,\nSustentados por tua mão\n\nCORO\n\nFinal:\nSacrifícios de louvor\nÉ o que podemos te oferecer\nPois tudo o que somos\nPela graça veio de ti\n\nPois tudo o que somos\nPela graça veio de ti"
+  },
+  {
+    id:7, num:"678", nome:"Tua Glória Enche Toda a Terra", avulso:false,
+    letra:
+"INTRODUÇÃO\n\nTua glória enche toda a terra,\nTeu nome é sobre todo nome,\nTu és o dono da minha vida,\nÉ só em ti que tenho salvação!\n\nTu és o dono do meu querer\nE os meus lábios\nPra sempre te adorarão.\n\nTua glória enche toda a terra,\nTeu nome é sobre todo nome,\nTu és o dono da minha vida,\nÉ só em ti que tenho salvação!\n\nTu és o dono do meu querer\nE os meus lábios\nPra sempre te adorarão.\n\nE com os anjos te adorarei\nE aos teus pés me prostrarei;\nTu és minha vida e o meu louvor\nE ao teu nome exaltarei.\n\nTua glória enche toda a terra,\nTeu nome é sobre todo nome,\nTu és o dono da minha vida,\nÉ só em ti que tenho salvação!\nTu és o dono do meu querer\nE os meus lábios\nPra sempre te adorarão.\nPra sempre te adorarão.\nPra sempre te adorarão.\n\nAquele que morreu\nMas a morte venceu, mas a morte venceu\nAquele que ressuscitou,\nSobre a morte triunfou,\nSobre a morte triunfou.\n\nE agora assentado está\nÀ direita de Deus pai,\nTem o poder sobre terra e céu,\nTem o nome sobre todo nome,\nEle é o cordeiro, Jesus Cristo, Senhor.\n\nTem o poder sobre terra e céu,\nTem o nome sobre todo nome,\nEle é o cordeiro, Jesus Cristo, Senhor.\n\nAquele que nos ama e com seu sangue\nNos libertou do pecado\nE nos constituiu reino e sacerdotes\nPara nosso Deus e pai, a ele a glória\nE o domínio pelos séculos dos séculos,\nAmém.\n\nA ele a glória e o domínio,\nPelos séculos dos séculos,\nAmém, amém, amém."
+  }
+];
+
+function renderLista() {
+  var lista = document.getElementById('lista');
+  L.forEach(function(l, i) {
+    var card = document.createElement('div');
+    card.className = 'louvor-card';
+    card.innerHTML =
+      '<div class="louvor-inner">' +
+        '<div class="louvor-num">' + (i+1) + '</div>' +
+        '<div class="louvor-info">' +
+          '<div class="louvor-name">' + l.nome + (l.avulso ? '<span class="avulso-badge">Avulso</span>' : '') + '</div>' +
+          '<div class="louvor-tag">' + (l.avulso ? 'Louvor avulso' : 'Hino ' + l.num) + '</div>' +
+        '</div>' +
+        '<div class="louvor-arrow">›</div>' +
+      '</div>';
+    card.onclick = function(){ abrirLouvor(l.id); };
+    lista.appendChild(card);
+  });
+}
+
+function abrirLouvor(id) {
+  var l = L.filter(function(x){ return x.id === id; })[0];
+  var idx = L.indexOf(l);
+  var prevId = idx > 0 ? L[idx-1].id : null;
+  var nextId = idx < L.length-1 ? L[idx+1].id : null;
+
+  document.getElementById('lista').style.display = 'none';
+  document.getElementById('viewer').style.display = 'block';
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('headerTitle').textContent = l.nome;
+  document.getElementById('headerSub').textContent = l.avulso ? 'Louvor avulso' : 'Hino ' + l.num;
+  document.getElementById('progressBar').style.display = 'block';
+  document.getElementById('progressFill').style.width = Math.round(((idx+1)/L.length)*100) + '%';
+
+  var viewer = document.getElementById('viewer');
+  viewer.innerHTML = '';
+
+  var hdr = document.createElement('div');
+  hdr.className = 'louvor-header';
+  hdr.innerHTML =
+    '<div class="louvor-header-num">' + (l.avulso ? 'Avulso' : 'Hino ' + l.num) + ' · ' + (idx+1) + ' de ' + L.length + '</div>' +
+    '<div class="louvor-header-name">' + l.nome + '</div>';
+  viewer.appendChild(hdr);
+
+  var letra = document.createElement('div');
+  letra.className = 'letra';
+  letra.textContent = l.letra;
+  viewer.appendChild(letra);
+
+  var nav = document.createElement('div');
+  nav.className = 'nav-bottom';
+
+  var btnPrev = document.createElement('button');
+  btnPrev.className = 'nav-btn prev';
+  btnPrev.textContent = '← Anterior';
+  if (!prevId) { btnPrev.disabled = true; }
+  else { btnPrev.onclick = function(){ abrirLouvor(prevId); }; }
+
+  var btnNext = document.createElement('button');
+  btnNext.className = 'nav-btn next';
+  btnNext.textContent = 'Próximo →';
+  if (!nextId) { btnNext.disabled = true; }
+  else { btnNext.onclick = function(){ abrirLouvor(nextId); }; }
+
+  nav.appendChild(btnPrev);
+  nav.appendChild(btnNext);
+  viewer.appendChild(nav);
+
+  var counter = document.createElement('div');
+  counter.className = 'counter';
+  counter.textContent = (idx+1) + ' de ' + L.length + ' louvores';
+  viewer.appendChild(counter);
+
+  window.scrollTo(0, 0);
+}
+
+function voltarLista() {
+  document.getElementById('lista').style.display = 'block';
+  document.getElementById('viewer').style.display = 'none';
+  document.getElementById('backBtn').classList.remove('visible');
+  document.getElementById('headerTitle').textContent = 'Casamento';
+  document.getElementById('headerSub').textContent = '7 louvores · toque para abrir';
+  document.getElementById('progressBar').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+
+renderLista();
+</script>
+</body>
+</html>
